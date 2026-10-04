@@ -25,10 +25,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@7
+        uses: actions/checkout@v7
 
       - name: Setup ArduinoCLI
-        uses: arduino/setup-arduino-cli@2
+        uses: arduino/setup-arduino-cli@v2
         with:
           version: "1.x"
 
@@ -42,27 +42,28 @@ jobs:
         shell: bash
         run: |
           mapfile -t sketches < <(
-            find sketches \
+            find . \
               -type f \
               -name "*.ino" \
+              -not -path "./.git/*" \
               -printf '%h\n' \
               | sort -u
           )
 
           if [ ${#sketches[@]} -eq 0 ]; then
-                      echo "::error::No Arduino sketches found."
-                      exit 1
-                    fi
+            echo "::error::No Arduino sketches found."
+            exit 1
+          fi
 
-                    echo "Found ${#sketches[@]} sketch(es)."
+          echo "Found ${#sketches[@]} sketch(es)."
 
-                    for sketch in "${sketches[@]}"; do
-                      echo "========================================"
-                      echo "Compiling: $sketch"
-                      echo "========================================"
+          for sketch in "${sketches[@]}"; do
+            echo "========================================"
+            echo "Compiling: $sketch"
+            echo "========================================"
 
-                      arduino-cli compile \
-                        --fqbn "${BOARD_FQBN}" \
-                        --warnings all \
-                        "$sketch"
-                    done
+            arduino-cli compile \
+              --fqbn "${BOARD_FQBN}" \
+              --warnings all \
+              "$sketch"
+          done

@@ -1,0 +1,68 @@
+name: Arduino CI
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+
+  pull_request:
+    branches:
+      - main
+      - develop
+
+permissions:
+  contents: read
+
+env:
+  BOARD_FQBN: arduino:avr:uno
+  BOARD_CORE: arduino:avr
+
+jobs:
+  compile:
+    name: Compile Arduino sketches
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkoukt@7
+
+      - name: Setup ArduinoCLI
+        uses: arduino/setup-arduino-cli@2
+        with:
+          version: "1.x"
+
+      - name: Update core index
+        run: arduino-cli core update-index
+
+      - name: Install board core
+        run: arduino-cli core install ${{ env.BOARD_CORE }}
+
+      - name: Compile all sketches
+        shell: bash
+        run: |
+          mapfile -t sketches < <(
+            find sketches \
+              -type f \
+              -name "*.ino" \
+              -printf '%h\n' \
+              | sort -u
+          )
+
+          if [ ${#sketches[@]} -eq 0 ]; then
+                      echo "::error::No Arduino sketches found."
+                      exit 1
+                    fi
+
+                    echo "Found ${#sketches[@]} sketch(es)."
+
+                    for sketch in "${sketches[@]}"; do
+                      echo "========================================"
+                      echo "Compiling: $sketch"
+                      echo "========================================"
+
+                      arduino-cli compile \
+                        --fqbn "${BOARD_FQBN}" \
+                        --warnings all \
+                        "$sketch"
+                    done

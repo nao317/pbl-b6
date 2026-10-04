@@ -25,7 +25,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkoukt@7
+        uses: actions/checkout@7
 
       - name: Setup ArduinoCLI
         uses: arduino/setup-arduino-cli@2

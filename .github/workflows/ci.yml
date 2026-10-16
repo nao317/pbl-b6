@@ -38,6 +38,11 @@ jobs:
       - name: Install board core
         run: arduino-cli core install ${{ env.BOARD_CORE }}
 
+      - name: Install sketch libraries
+        run: |
+          arduino-cli lib update-index
+          arduino-cli lib install "Adafruit PWM Servo Driver Library"
+
       - name: Compile all sketches
         shell: bash
         run: |
